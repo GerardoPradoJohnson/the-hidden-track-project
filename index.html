@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="bg-white text-slate-900">
+<html lang="es" class="bg-slate-100 text-slate-900">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,25 +19,35 @@
     };
   </script>
 </head>
-<body class="min-h-screen bg-gradient-to-b from-white to-slate-100 text-slate-900 transition-colors duration-200 font-mono dark:from-slate-950 dark:to-slate-900 dark:text-slate-100">
+<body class="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 text-slate-900 transition-colors duration-200 font-mono dark:from-slate-950 dark:to-slate-900 dark:text-slate-100">
   <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
     <header class="flex flex-col gap-4">
       <div class="flex items-center gap-3">
         <div class="px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-semibold tracking-wide dark:bg-white dark:text-slate-900">The Hidden Track Project</div>
         <span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Console Cipher</span>
       </div>
-      <pre class="w-full overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs leading-5 text-slate-800 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
-   ____  _   _   _    _      _   _   _                 _            _            _   
-  / ___|| | | | | |_ | |__  | |_| | | |_   ___   ___  | |_   _ __  | |__    ___ | |_ 
-  \\___ \\| | | | | __|| '_ \\ | __| | | __| / _ \\ / _ \\ | __| | '_ \\ | '_ \\  / _ \\| __|
-   ___) || |_| | | |_ | | | || |_  | | |_ |  __/| (_) || |_  | |_) || | | ||  __/| |_ 
-  |____/  \\___/   \\__||_| |_| \\__| |_|\\__| \\___| \\___/  \\__| | .__/ |_| |_| \\___| \\__|
-                                                            |_|                       
+      <pre class="w-full overflow-x-auto rounded-xl border border-slate-300 bg-white p-4 text-xs leading-5 text-slate-800 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+_____ _            
+|_   _| |__   ___   
+  | | | '_ \ / _ \  
+  |_| |_| |_|\___|  
+                    
+ _   _ _     _     _             
+| | | (_) __| | __| | ___ _ __   
+| |_| | |/ _` |/ _` |/ _ \ '_ \  
+|  _  | | (_| | (_| |  __/ | | | 
+|_| |_|_|\__,_|\__,_|\___|_| |_| 
+                                 
+ _____               _    
+|_   _| __ __ _  ___| | __
+  | || '__/ _` |/ __| |/ /
+  | || | | (_| | (__|   < 
+  |_||_|  \__,_|\___|_|\_\                   
       </pre>
       <div class="flex flex-wrap items-center gap-3">
-        <button id="themeToggle" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 text-xs">Modo claro/oscuro</button>
+        <button id="themeToggle" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 text-xs">Modo claro/oscuro</button>
         <button id="loginBtn" class="px-4 py-2 rounded-lg bg-sky-500 text-white font-semibold shadow hover:bg-sky-600 text-xs">Login con Spotify</button>
-        <button id="healthBtn" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 text-xs">Ping API</button>
+        <button id="healthBtn" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 text-xs">Ping API</button>
       </div>
     </header>
 
@@ -46,14 +56,14 @@
       <button class="tab-btn px-4 py-2 rounded-lg bg-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700" data-tab="decode">Decoder</button>
     </nav>
 
-    <section id="tab-encode" class="panel space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section id="tab-encode" class="panel space-y-4 rounded-xl border border-slate-300 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div class="space-y-2">
         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Mensaje a cifrar</label>
-        <textarea id="encMessage" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="MENSAJE CIFRADO"></textarea>
+        <textarea id="encMessage" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="MENSAJE CIFRADO"></textarea>
       </div>
       <div class="space-y-2">
         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Nombre del playlist (opcional)</label>
-        <input id="encPlaylist" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="The Hidden Track Project">
+        <input id="encPlaylist" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="The Hidden Track Project">
       </div>
       <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
         <input id="encPublic" type="checkbox" class="rounded border-slate-300 text-sky-500 focus:ring-sky-400" checked>
@@ -61,21 +71,21 @@
       </label>
       <button id="encodeBtn" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-sky-500 text-white font-semibold shadow hover:bg-sky-600">Cifrar y crear playlist</button>
       <div class="text-xs text-slate-500 dark:text-slate-400" id="encStatus"></div>
-      <pre class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-800 overflow-x-auto shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" id="encResult">Respuesta: pendiente</pre>
+      <pre class="bg-white border border-slate-300 rounded-lg p-3 text-xs text-slate-800 overflow-x-auto shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" id="encResult">Respuesta: pendiente</pre>
     </section>
 
-    <section id="tab-decode" class="panel space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm hidden dark:border-slate-800 dark:bg-slate-900">
+    <section id="tab-decode" class="panel space-y-4 rounded-xl border border-slate-300 bg-white p-4 shadow-sm hidden dark:border-slate-800 dark:bg-slate-900">
       <div class="space-y-2">
         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">URL del playlist</label>
-        <input id="decPlaylistUrl" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="https://open.spotify.com/playlist/XXXX">
+        <input id="decPlaylistUrl" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="https://open.spotify.com/playlist/XXXX">
       </div>
       <div class="space-y-2">
         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Hash de clave</label>
-        <textarea id="decKey" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="Pega el hash devuelto por /api/encode"></textarea>
+        <textarea id="decKey" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="Pega el hash devuelto por /api/encode"></textarea>
       </div>
       <button id="decodeBtn" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-slate-900 text-white font-semibold shadow hover:bg-slate-800 dark:bg-white dark:text-slate-900">Descifrar mensaje</button>
       <div class="text-xs text-slate-500 dark:text-slate-400" id="decStatus"></div>
-      <pre class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-800 overflow-x-auto shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" id="decResult">Respuesta: pendiente</pre>
+      <pre class="bg-white border border-slate-300 rounded-lg p-3 text-xs text-slate-800 overflow-x-auto shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" id="decResult">Respuesta: pendiente</pre>
     </section>
   </div>
 
