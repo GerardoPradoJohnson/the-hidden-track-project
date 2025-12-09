@@ -10,17 +10,16 @@ export default async function handler(req, res) {
 
   try {
     const body = await parseJsonBody(req);
-    const { playlistUrl, hash, access_token } = body;
+    const { playlistUrl, access_token } = body;
 
     if (!playlistUrl) return sendJson(res, 400, { error: "Falta 'playlistUrl' en el cuerpo." });
-    if (!hash) return sendJson(res, 400, { error: "Falta 'hash' (clave generada por encode)." });
 
     const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, "");
     const token = access_token || bearer;
     if (!token) return sendJson(res, 401, { error: "Falta access_token. Inicia sesión con Spotify primero." });
 
     const spotifyClient = new SpotifyClient(token);
-    const result = await decodeMessage({ playlistUrl, hash, spotifyClient });
+    const result = await decodeMessage({ playlistUrl, spotifyClient });
 
     return sendJson(res, 200, {
       ok: true,

@@ -68,10 +68,6 @@
         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">URL del playlist</label>
         <input id="decPlaylistUrl" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="https://open.spotify.com/playlist/XXXX">
       </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Hash de clave</label>
-        <textarea id="decKey" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="Pega el hash devuelto por /api/encode"></textarea>
-      </div>
       <button id="decodeBtn" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-slate-900 text-white font-semibold shadow hover:bg-slate-800 dark:bg-white dark:text-slate-900">Descifrar mensaje</button>
       <div class="text-xs text-slate-500 dark:text-slate-400" id="decStatus"></div>
       <pre class="bg-white border border-slate-300 rounded-lg p-3 text-xs text-slate-800 overflow-x-auto shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" id="decResult">Respuesta: pendiente</pre>
@@ -222,10 +218,9 @@
 
     document.getElementById("decodeBtn").addEventListener("click", async () => {
       const playlistUrl = document.getElementById("decPlaylistUrl")?.value.trim();
-      const keyText = document.getElementById("decKey")?.value.trim();
       const token = getStoredToken();
-      if (!playlistUrl || !keyText) {
-        setStatus(decStatus, "Faltan playlistUrl o hash.");
+      if (!playlistUrl) {
+        setStatus(decStatus, "Falta playlistUrl.");
         return;
       }
       if (!token) {
@@ -242,7 +237,7 @@
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token,
           },
-          body: JSON.stringify({ playlistUrl, hash: keyText }),
+          body: JSON.stringify({ playlistUrl }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Error en decode");

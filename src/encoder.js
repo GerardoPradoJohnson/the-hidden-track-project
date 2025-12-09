@@ -8,34 +8,22 @@ export function generateRotShift() {
 }
 
 async function findTrackForChunk(chunk, spotify) {
-  // Prefer exact inclusion match in the title, else fallback to partial/first letter.
+  // Prefer titles that START with the chunk to make decoding deterministic.
   const candidates = await spotify.searchTracks(chunk);
   const normalizedChunk = chunk.toUpperCase();
 
-  const starts = candidates.filter((track) => {
-    const title = track.name.toUpperCase();
-    return title.startsWith(normalizedChunk) || new RegExp(`\\b${normalizedChunk}`).test(title);
-  });
-  const matches = candidates.filter((track) => {
-    const title = track.name.toUpperCase();
-    return title.includes(normalizedChunk);
-  });
-  const partials = candidates.filter((track) => {
-    const title = track.name.toUpperCase();
-    return title.includes(normalizedChunk[0]);
-  });
-
-  const primaryList = starts.length ? starts : matches.length ? matches : partials;
-  if (primaryList && primaryList.length) return primaryList[0];
+  const starts = candidates.filter((track) => track.name.toUpperCase().startsWith(normalizedChunk));
   if (starts.length) return starts[0];
+
+  const matches = candidates.filter((track) => track.name.toUpperCase().includes(normalizedChunk));
   if (matches.length) return matches[0];
-  if (partials.length) return partials[0];
+
   return candidates[0];
 }
 
 export async function encodeMessage({
   message,
-  rotShift = generateRotShift(),
+  rotShift = 3,
   chunkSize = DEFAULT_CHUNK_SIZE,
   decoyRule = DEFAULT_DECOY_RULE,
   decoyFilter = DEFAULT_DECOY_FILTER,
@@ -51,7 +39,7 @@ export async function encodeMessage({
   const normalized = normalizeText(message);
   const chunks = chunkText(normalized, chunkSize);
   const encryptedChunks = applyRotToChunks(chunks, rotShift);
-  const searchChunks = encryptedChunks.map((c) => c === "_" ? "0" : c);
+  const searchChunks = encryptedChunks.map((c) => c === "_" ? "SPACE" : c);
 
   const realTracks = [];
   for (const chunk of searchChunks) {

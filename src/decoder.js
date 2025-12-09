@@ -1,6 +1,6 @@
 import { applyRot, normalizeText } from "./normalizer.js";
 import { playlistIdFromUrl } from "./spotifyClient.js";
-import { decodeOptionsHash } from "./options.js";
+import { getCipherOptionsFromEnv } from "./options.js";
 
 function isDecoyPosition(index, rule, decoyPositions) {
   if (rule === "none") return false;
@@ -16,7 +16,10 @@ function isDecoyPosition(index, rule, decoyPositions) {
 
 function extractChunkFromTitle(title, chunkSize) {
   const normalized = normalizeText(title); // upper + accents removed + spaces -> _
+  if (normalized.includes("SPACE")) return "_";
+
   if (chunkSize === 1) {
+    // Use the first valid char; encode siempre elige títulos que inician con el chunk.
     for (const char of normalized) {
       if (/^[A-Z0-9_]$/.test(char)) return char;
     }
@@ -30,15 +33,13 @@ function extractChunkFromTitle(title, chunkSize) {
 
 export async function decodeMessage({
   playlistUrl,
-  hash,
   spotifyClient,
+  options: providedOptions,
 }) {
   if (!playlistUrl) throw new Error("Falta la URL del playlist.");
-  if (!hash) throw new Error("Falta la clave hash.");
   if (!spotifyClient) throw new Error("Se requiere un SpotifyClient configurado.");
 
-  const options = decodeOptionsHash(hash);
-  const declaredChunks = options.chunks_encrypted || options.chunks_search;
+  const options = providedOptions || getCipherOptionsFromEnv();
 
   const playlistId = playlistIdFromUrl(playlistUrl);
   if (!playlistId) throw new Error("No se pudo extraer playlist_id de la URL.");
@@ -49,13 +50,8 @@ export async function decodeMessage({
   let realIndex = 0;
   tracks.forEach((track, idx) => {
     if (isDecoyPosition(idx, options.decoy_rule, options.decoy_positions)) return;
-    let chunk = declaredChunks?.[realIndex];
-    if (chunk === "0") chunk = "_";
     const chunkSize = options.chunk_size || 1;
-    const extracted = chunk || extractChunkFromTitle(track.name, chunkSize);
-    // Prefer chunk from hash; fallback to extracted from title.
-    chunk = chunk || extracted;
-    if (chunk === "0") chunk = "_";
+    const chunk = extractChunkFromTitle(track.name, chunkSize);
     if (chunk) {
       realChunks.push(chunk);
       realIndex += 1;

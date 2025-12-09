@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     const envOptions = getCipherOptionsFromEnv();
     const options = {
       chunkSize: envOptions.chunk_size,
-      rotShift: envOptions.rot_shift || generateRotShift(),
+      rotShift: envOptions.rot_shift,
       decoyRule: envOptions.decoy_rule,
       decoyFilter: envOptions.decoy_filter,
     };
