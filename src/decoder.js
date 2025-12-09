@@ -38,6 +38,7 @@ export async function decodeMessage({
   if (!spotifyClient) throw new Error("Se requiere un SpotifyClient configurado.");
 
   const options = decodeOptionsHash(hash);
+  const declaredChunks = options.chunks_encrypted || options.chunks_search;
 
   const playlistId = playlistIdFromUrl(playlistUrl);
   if (!playlistId) throw new Error("No se pudo extraer playlist_id de la URL.");
@@ -48,8 +49,13 @@ export async function decodeMessage({
   let realIndex = 0;
   tracks.forEach((track, idx) => {
     if (isDecoyPosition(idx, options.decoy_rule, options.decoy_positions)) return;
-    const declaredChunk = options.chunks_encrypted?.[realIndex];
-    const chunk = declaredChunk || extractChunkFromTitle(track.name, options.chunk_size || 2);
+    let chunk = declaredChunks?.[realIndex];
+    if (chunk === "0") chunk = "_";
+    const chunkSize = options.chunk_size || 1;
+    const extracted = chunk || extractChunkFromTitle(track.name, chunkSize);
+    // Prefer chunk from hash; fallback to extracted from title.
+    chunk = chunk || extracted;
+    if (chunk === "0") chunk = "_";
     if (chunk) {
       realChunks.push(chunk);
       realIndex += 1;

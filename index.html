@@ -27,22 +27,11 @@
         <span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Console Cipher</span>
       </div>
       <pre class="w-full overflow-x-auto rounded-xl border border-slate-300 bg-white p-4 text-xs leading-5 text-slate-800 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
-_____ _            
-|_   _| |__   ___   
-  | | | '_ \ / _ \  
-  |_| |_| |_|\___|  
-                    
- _   _ _     _     _             
-| | | (_) __| | __| | ___ _ __   
-| |_| | |/ _` |/ _` |/ _ \ '_ \  
-|  _  | | (_| | (_| |  __/ | | | 
-|_| |_|_|\__,_|\__,_|\___|_| |_| 
-                                 
- _____               _    
-|_   _| __ __ _  ___| | __
-  | || '__/ _` |/ __| |/ /
-  | || | | (_| | (__|   < 
-  |_||_|  \__,_|\___|_|\_\                   
+▀█▀ █░█ █▀▀   █░█ █ █▀▄ █▀▄ █▀▀ █▄░█
+░█░ █▀█ ██▄   █▀█ █ █▄▀ █▄▀ ██▄ █░▀█
+
+▀█▀ █▀█ ▄▀█ █▀▀ █▄▀
+░█░ █▀▄ █▀█ █▄▄ █░█                
       </pre>
       <div class="flex flex-wrap items-center gap-3">
         <button id="themeToggle" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 text-xs">Modo claro/oscuro</button>
@@ -258,7 +247,7 @@ _____ _
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Error en decode");
         setStatus(decStatus, "Mensaje reconstruido.");
-        setResult(decResult, json);
+        setResult(decResult, json.message || "");
       } catch (e) {
         setStatus(decStatus, "Error: " + e.message);
         setResult(decResult, {});
