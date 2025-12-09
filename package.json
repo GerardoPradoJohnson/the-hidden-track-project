@@ -1,0 +1,18 @@
+{
+  "name": "the-hidden-track-project",
+  "version": "0.1.0",
+  "description": "Book cipher style encoder/decoder using Spotify playlists and track titles. Formerly SPOTIFY CIPHER ESPÍA.",
+  "type": "module",
+  "main": "src/cli.js",
+  "scripts": {
+    "encode": "node src/cli.js encode",
+    "decode": "node src/cli.js decode",
+    "lint": "node --check src/**/*.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}

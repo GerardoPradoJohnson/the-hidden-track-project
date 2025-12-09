@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-white text-slate-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Hidden Track Project</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#111827",
+            accent: "#0ea5e9",
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-white to-slate-100 text-slate-900 transition-colors duration-200 dark:from-slate-950 dark:to-slate-900 dark:text-slate-100">
+  <div class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <header class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-semibold tracking-wide dark:bg-white dark:text-slate-900">The Hidden Track Project</div>
+        <span class="text-sm text-slate-500 dark:text-slate-400">Book-cipher con playlists de Spotify</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="themeToggle" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 text-sm">Modo claro/oscuro</button>
+        <button id="loginBtn" class="px-4 py-2 rounded-lg bg-sky-500 text-white font-semibold shadow hover:bg-sky-600 text-sm">Login con Spotify</button>
+        <button id="healthBtn" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 text-sm">Ping API</button>
+      </div>
+    </header>
+
+    <nav class="flex gap-2">
+      <button class="tab-btn px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold shadow active dark:bg-white dark:text-slate-900" data-tab="encode">Coder</button>
+      <button class="tab-btn px-4 py-2 rounded-lg bg-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700" data-tab="decode">Decoder</button>
+    </nav>
+
+    <section id="tab-encode" class="panel space-y-4">
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Mensaje a cifrar</label>
+        <textarea id="encMessage" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="MENSAJE CIFRADO"></textarea>
+      </div>
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Nombre del playlist (opcional)</label>
+        <input id="encPlaylist" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="The Hidden Track Project">
+      </div>
+      <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+        <input id="encPublic" type="checkbox" class="rounded border-slate-300 text-sky-500 focus:ring-sky-400" checked>
+        Playlist público (por defecto)
+      </label>
+      <button id="encodeBtn" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-sky-500 text-white font-semibold shadow hover:bg-sky-600">Cifrar y crear playlist</button>
+      <div class="text-xs text-slate-500 dark:text-slate-400" id="encStatus"></div>
+      <pre class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-800 overflow-x-auto shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" id="encResult">Respuesta: pendiente</pre>
+    </section>
+
+    <section id="tab-decode" class="panel space-y-4 hidden">
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">URL del playlist</label>
+        <input id="decPlaylistUrl" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="https://open.spotify.com/playlist/XXXX">
+      </div>
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Hash de clave</label>
+        <textarea id="decKey" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="Pega el hash devuelto por /api/encode"></textarea>
+      </div>
+      <button id="decodeBtn" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-slate-900 text-white font-semibold shadow hover:bg-slate-800 dark:bg-white dark:text-slate-900">Descifrar mensaje</button>
+      <div class="text-xs text-slate-500 dark:text-slate-400" id="decStatus"></div>
+      <pre class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-800 overflow-x-auto shadow-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" id="decResult">Respuesta: pendiente</pre>
+    </section>
+  </div>
+
+  <script>
+    // Theme toggle
+    const themeToggle = document.getElementById("themeToggle");
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") document.documentElement.classList.add("dark");
+    themeToggle.addEventListener("click", () => {
+      const isDark = document.documentElement.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    });
+
+    const loginBtn = document.getElementById("loginBtn");
+    const healthBtn = document.getElementById("healthBtn");
+    const encResult = document.getElementById("encResult");
+    const decResult = document.getElementById("decResult");
+    const encStatus = document.getElementById("encStatus");
+    const decStatus = document.getElementById("decStatus");
+
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+        tabButtons.forEach((b) => b.classList.remove("bg-slate-900", "text-white", "dark:bg-white", "dark:text-slate-900", "active"));
+        tabButtons.forEach((b) => b.classList.add("bg-slate-200", "text-slate-700", "dark:bg-slate-800", "dark:text-slate-100"));
+        btn.classList.add("bg-slate-900", "text-white", "dark:bg-white", "dark:text-slate-900", "active");
+        btn.classList.remove("bg-slate-200", "text-slate-700", "dark:bg-slate-800", "dark:text-slate-100");
+        document.querySelectorAll("section.panel").forEach((p) => p.classList.add("hidden"));
+        document.getElementById(`tab-${target}`).classList.remove("hidden");
+      });
+    });
+
+    function setStatus(el, msg) { el.textContent = msg || ""; }
+    function setResult(el, data) { el.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2); }
+    function getStoredToken() { return localStorage.getItem("spotify_access_token") || ""; }
+
+    let clientConfig = null;
+    async function loadConfig() {
+      try {
+        const res = await fetch("/api/config");
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "No se pudo cargar config");
+        clientConfig = json;
+        setStatus(encStatus, "Config cargada. Listo para login.");
+      } catch (e) {
+        setStatus(encStatus, "Error cargando config: " + e.message);
+      }
+    }
+
+    async function sha256Base64Url(str) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      const hash = await crypto.subtle.digest("SHA-256", data);
+      const bytes = new Uint8Array(hash);
+      let binary = "";
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+
+    function generateCodeVerifier() {
+      const array = new Uint8Array(64);
+      crypto.getRandomValues(array);
+      return Array.from(array, (b) => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~"[b % 66]).join("");
+    }
+
+    loginBtn.addEventListener("click", async () => {
+      if (!clientConfig) {
+        await loadConfig();
+        if (!clientConfig) return;
+      }
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await sha256Base64Url(codeVerifier);
+      localStorage.setItem("spotify_code_verifier", codeVerifier);
+
+      const url = new URL("https://accounts.spotify.com/authorize");
+      url.searchParams.set("response_type", "code");
+      url.searchParams.set("client_id", clientConfig.clientId);
+      url.searchParams.set("redirect_uri", clientConfig.redirectUri || `${window.location.origin}/callback`);
+      url.searchParams.set("scope", "playlist-modify-public playlist-modify-private playlist-read-private");
+      url.searchParams.set("code_challenge_method", "S256");
+      url.searchParams.set("code_challenge", codeChallenge);
+      window.location.href = url.toString();
+    });
+
+    healthBtn.addEventListener("click", async () => {
+      setStatus(encStatus, "Ping /api/health...");
+      try {
+        const res = await fetch("/api/health");
+        const json = await res.json();
+        setStatus(encStatus, "API ok");
+        setResult(encResult, json);
+      } catch (e) {
+        setStatus(encStatus, "API no responde");
+        setResult(encResult, e.message);
+      }
+    });
+
+    document.getElementById("encodeBtn").addEventListener("click", async () => {
+      const messageEl = document.getElementById("encMessage");
+      const playlistEl = document.getElementById("encPlaylist");
+      const publicEl = document.getElementById("encPublic");
+      if (!messageEl || !playlistEl || !publicEl) {
+        setStatus(encStatus, "Faltan campos en la UI.");
+        return;
+      }
+      const message = messageEl.value.trim();
+      const playlistName = playlistEl.value.trim();
+      const isPublic = publicEl.checked;
+      const token = getStoredToken();
+      if (!message) {
+        setStatus(encStatus, "Falta el mensaje a cifrar.");
+        return;
+      }
+      if (!token) {
+        setStatus(encStatus, "Falta access_token. Inicia sesión con Spotify.");
+        return;
+      }
+      setStatus(encStatus, "Enviando /api/encode...");
+      document.getElementById("encodeBtn").disabled = true;
+      try {
+        const res = await fetch("/api/encode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token,
+          },
+          body: JSON.stringify({
+            message,
+            playlistName: playlistName || undefined,
+            isPublic,
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Error en encode");
+        setStatus(encStatus, "Listo. Guarda el hash.");
+        setResult(encResult, json);
+      } catch (e) {
+        setStatus(encStatus, "Error: " + e.message);
+        setResult(encResult, {});
+      } finally {
+        document.getElementById("encodeBtn").disabled = false;
+      }
+    });
+
+    document.getElementById("decodeBtn").addEventListener("click", async () => {
+      const playlistUrl = document.getElementById("decPlaylistUrl")?.value.trim();
+      const keyText = document.getElementById("decKey")?.value.trim();
+      const token = getStoredToken();
+      if (!playlistUrl || !keyText) {
+        setStatus(decStatus, "Faltan playlistUrl o hash.");
+        return;
+      }
+      if (!token) {
+        setStatus(decStatus, "Falta access_token. Inicia sesión con Spotify.");
+        return;
+      }
+
+      setStatus(decStatus, "Enviando /api/decode...");
+      document.getElementById("decodeBtn").disabled = true;
+      try {
+        const res = await fetch("/api/decode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token,
+          },
+          body: JSON.stringify({ playlistUrl, hash: keyText }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Error en decode");
+        setStatus(decStatus, "Mensaje reconstruido.");
+        setResult(decResult, json);
+      } catch (e) {
+        setStatus(decStatus, "Error: " + e.message);
+        setResult(decResult, {});
+      } finally {
+        document.getElementById("decodeBtn").disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify Callback</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Inter", system-ui, sans-serif;
+      background: #060915;
+      color: #f4f7fb;
+      text-align: center;
+      padding: 24px;
+    }
+    .card {
+      background: #0f1629;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 20px;
+      max-width: 520px;
+      width: min(520px, 92vw);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    }
+    code {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      word-break: break-all;
+    }
+    button {
+      margin-top: 16px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #7cf2e1;
+      color: #04060f;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Callback de Spotify</h2>
+    <p id="status">Procesando token...</p>
+    <p id="token" style="display:none;"></p>
+    <button id="backBtn" style="display:none;">Volver a la app</button>
+  </div>
+
+  <script>
+    async function exchangeCode(code, redirectUri) {
+      const codeVerifier = localStorage.getItem("spotify_code_verifier");
+      if (!codeVerifier) throw new Error("Falta code_verifier local. Intenta iniciar sesión de nuevo.");
+      const res = await fetch("/api/auth/exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, code_verifier: codeVerifier, redirect_uri: redirectUri }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "No se pudo intercambiar el code.");
+      return json;
+    }
+
+    (async function() {
+      const search = new URLSearchParams(window.location.search);
+      const code = search.get("code");
+      const error = search.get("error");
+      const statusEl = document.getElementById("status");
+      const tokenEl = document.getElementById("token");
+      const backBtn = document.getElementById("backBtn");
+      const redirectUri = `${window.location.origin}/callback`;
+
+      if (error) {
+        statusEl.textContent = "Error devuelto por Spotify: " + error;
+        return;
+      }
+
+      if (!code) {
+        statusEl.textContent = "No se encontró 'code' en la URL.";
+        return;
+      }
+
+      try {
+        const tokenData = await exchangeCode(code, redirectUri);
+        localStorage.setItem("spotify_access_token", tokenData.access_token);
+        if (tokenData.expires_in) localStorage.setItem("spotify_token_expires_in", tokenData.expires_in);
+        if (tokenData.refresh_token) localStorage.setItem("spotify_refresh_token", tokenData.refresh_token);
+        statusEl.textContent = "Login exitoso. Redirigiendo...";
+        backBtn.style.display = "inline-block";
+        backBtn.onclick = () => window.location.href = "/";
+        setTimeout(() => window.location.href = "/", 800);
+      } catch (e) {
+        statusEl.textContent = "No se pudo obtener access_token.";
+        tokenEl.textContent = e.message;
+      }
+    })();
+  </script>
+</body>
+</html>
