@@ -3,6 +3,7 @@ import { playlistIdFromUrl } from "./spotifyClient.js";
 import { decodeOptionsHash } from "./options.js";
 
 function isDecoyPosition(index, rule, decoyPositions) {
+  if (rule === "none") return false;
   if (Array.isArray(decoyPositions) && decoyPositions.length) {
     return decoyPositions.includes(index + 1);
   }

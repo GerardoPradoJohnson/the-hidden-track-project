@@ -2,41 +2,12 @@ import { CIPHER_ID, DEFAULT_CHUNK_SIZE, DEFAULT_DECOY_FILTER, DEFAULT_DECOY_RULE
 import { normalizeText, chunkText, applyRotToChunks } from "./normalizer.js";
 import { encodeOptionsHash } from "./options.js";
 
-const DECOY_FILTERS = {
-  duration_is_odd: (track) => (track.duration_ms ?? 0) % 2 === 1,
-  album_starts_with_vowel: (track) => /^[AEIOU]/i.test(track.album?.name || ""),
-  popularity_gt_50: (track) => (track.popularity ?? 0) > 50,
-};
-
-async function getArtistGenres(artistId, spotify, cache) {
-  if (!artistId) return [];
-  if (cache.has(artistId)) return cache.get(artistId);
-  const artist = await spotify.getArtist(artistId);
-  const genres = artist?.genres || [];
-  cache.set(artistId, genres);
-  return genres;
-}
-
-async function pickGenrePreference(track, spotify, cache) {
-  const firstArtist = track?.artists?.[0];
-  if (!firstArtist) return null;
-  const genres = await getArtistGenres(firstArtist.id, spotify, cache);
-  return genres[0] || null;
-}
-
 export function generateRotShift() {
   // 1..25 to avoid identity ROT 0.
   return Math.floor(Math.random() * 25) + 1;
 }
 
-function isDecoyPosition(index, rule) {
-  if (rule === "every_3rd_track") {
-    return (index + 1) % 3 === 0;
-  }
-  return false;
-}
-
-async function findTrackForChunk(chunk, spotify, genrePreference, cache) {
+async function findTrackForChunk(chunk, spotify) {
   // Prefer exact inclusion match in the title, else fallback to partial/first letter.
   const candidates = await spotify.searchTracks(chunk);
   const normalizedChunk = chunk.toUpperCase();
@@ -55,43 +26,11 @@ async function findTrackForChunk(chunk, spotify, genrePreference, cache) {
   });
 
   const primaryList = starts.length ? starts : matches.length ? matches : partials;
-  const filtered = genrePreference
-    ? primaryList.filter((track) => trackHasGenre(track, genrePreference, spotify, cache))
-    : primaryList;
-
-  if (filtered && filtered.length) return filtered[0];
+  if (primaryList && primaryList.length) return primaryList[0];
   if (starts.length) return starts[0];
   if (matches.length) return matches[0];
   if (partials.length) return partials[0];
   return candidates[0];
-}
-
-async function trackHasGenre(track, genrePreference, spotify, cache) {
-  if (!genrePreference) return true;
-  const firstArtist = track?.artists?.[0];
-  if (!firstArtist) return false;
-  const genres = await getArtistGenres(firstArtist.id, spotify, cache);
-  return genres.some((g) => g.toLowerCase() === genrePreference.toLowerCase());
-}
-
-async function findDecoyTrack(ruleId, spotify, forbiddenPieces, genrePreference, cache) {
-  const filters = DECOY_FILTERS;
-  const filterFn = filters[ruleId] || (() => true);
-
-  // Use a neutral query unlikely to collide with encrypted chunks.
-  const decoyQueries = ["love", "night", "sky", "time", "dream"];
-  const query = decoyQueries[Math.floor(Math.random() * decoyQueries.length)];
-  const candidates = await spotify.searchTracks(query);
-  const candidate = candidates.find((track) => {
-    const title = track.name.toUpperCase();
-    const collides = forbiddenPieces.some((piece) => title.includes(piece));
-    return !collides && filterFn(track);
-  });
-  const genreFiltered = genrePreference
-    ? await Promise.all(candidates.map(async (track) => ({ track, ok: await trackHasGenre(track, genrePreference, spotify, cache) && filterFn(track) && !forbiddenPieces.some((p) => track.name.toUpperCase().includes(p)) })))
-    : [];
-  const genreCandidate = genreFiltered.find((item) => item.ok)?.track;
-  return genreCandidate || candidate || candidates[0];
 }
 
 export async function encodeMessage({
@@ -115,43 +54,13 @@ export async function encodeMessage({
   const searchChunks = encryptedChunks.map((c) => c === "_" ? "0" : c);
 
   const realTracks = [];
-  const artistGenreCache = new Map();
-  let genrePreference = null;
   for (const chunk of searchChunks) {
-    const track = await findTrackForChunk(chunk, spotifyClient, genrePreference, artistGenreCache);
-    if (!genrePreference) {
-      genrePreference = await pickGenrePreference(track, spotifyClient, artistGenreCache);
-    }
+    const track = await findTrackForChunk(chunk, spotifyClient);
     realTracks.push(track);
   }
 
-  const playlistTracks = [];
+  const playlistTracks = [...realTracks];
   const decoyPositions = [];
-  let chunkPointer = 0;
-
-  while (chunkPointer < realTracks.length) {
-    const currentIndex = playlistTracks.length;
-    if (isDecoyPosition(currentIndex, decoyRule)) {
-      const decoy = await findDecoyTrack(decoyFilter, spotifyClient, searchChunks, genrePreference, artistGenreCache);
-      if (decoy) {
-        decoyPositions.push(currentIndex + 1);
-        playlistTracks.push(decoy);
-        continue;
-      }
-    }
-
-    playlistTracks.push(realTracks[chunkPointer]);
-    chunkPointer += 1;
-  }
-
-  // If the last track is expected to be decoy because of the rule, add it.
-  if (isDecoyPosition(playlistTracks.length, decoyRule)) {
-    const decoy = await findDecoyTrack(decoyFilter, spotifyClient, searchChunks, genrePreference, artistGenreCache);
-    if (decoy) {
-      decoyPositions.push(playlistTracks.length + 1);
-      playlistTracks.push(decoy);
-    }
-  }
 
   const trackUris = playlistTracks.map((track) => track.uri);
   const playlist = await spotifyClient.createPlaylist(userId, playlistName, { isPublic });
